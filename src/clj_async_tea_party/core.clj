@@ -35,3 +35,18 @@
 (async/>!! tea-channel :hot-with-sugar)
 (async/>!! tea-channel :hot-with-milk)
 
+; reading multiple channels
+(def tea-channel (async/chan 10))
+(def milk-channel (async/chan 10))
+(def sugar-channel (async/chan 10))
+
+(async/go-loop []
+  (let [[v ch]
+        (async/alts! [tea-channel
+                      milk-channel
+                      sugar-channel])]
+    (println "Got " v " from " ch)
+    (recur)))
+
+(async/>!! sugar-channel :sugar)
+(async/>!! milk-channel :sugar)
