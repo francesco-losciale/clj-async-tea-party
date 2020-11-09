@@ -1,8 +1,11 @@
 (ns clj-async-tea-party.core
+  (:gen-class)
   (:require [clojure.core.async :as async]))
 
 (def google-tea-service-chan (async/chan 10))
 (def yahoo-tea-service-chan (async/chan 10))
+
+(def result-chan (async/chan 10))
 
 (defn random-add []
   (reduce + (conj [] (repeat (rand-int 100000) 1))))
@@ -25,8 +28,12 @@
   (async/go (let [[v] (async/alts!
                         [google-tea-service-chan
                          yahoo-tea-service-chan])]
-              (println v))))
+              (async/>! result-chan v))))
 
-
+(defn -main [& args]
+  (println "Requesting tea!")
+  (request-tea)
+  ; now wait synchronously for a message
+  (println (async/<!! result-chan)))
 
 
